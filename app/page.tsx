@@ -16,17 +16,55 @@ import { AdminLevel2Modal } from "@/components/landing/AdminLevel2Modal";
 import { getConfig, saveConfig, DEFAULT_CONFIG } from "@/lib/config";
 import type { SiteConfig } from "@/lib/config";
 
+// === INYECCIÓN DE SUPABASE (Motor de Base de Datos VFA Digital) ===
+const SUPABASE_URL = 'https://evgumejfkpyktezdodah.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_TVkTKUFKX5Bladdqb1flVQ_29NYsD56';
+
 export default function Home() {
   const [config, setConfig] = useState<SiteConfig>(DEFAULT_CONFIG);
   const [isLoaded, setIsLoaded] = useState(false);
   const [showAdminLevel1, setShowAdminLevel1] = useState(false);
   const [showAdminLevel2, setShowAdminLevel2] = useState(false);
 
-  // Load config from localStorage on mount
+  // Cargar configuración local Y precios de Supabase al entrar
   useEffect(() => {
+    // 1. Cargamos configuración local (redes, whatsapp, etc)
     const loadedConfig = getConfig();
-    setConfig(loadedConfig);
-    setIsLoaded(true);
+    
+    // 2. Buscamos los precios en tiempo real a Supabase
+    fetch(`${SUPABASE_URL}/rest/v1/servicios`, {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.length > 0) {
+        // Adaptamos los datos para que el diseño de v0 no se rompa
+        const serviciosNube = data.map((srv: any) => ({
+          id: srv.id,
+          title: srv.nombre, // Aseguramos compatibilidad
+          nombre: srv.nombre,
+          price: srv.precio,
+          precio: srv.precio,
+          duration: srv.duracion,
+          duracion: srv.duracion,
+          description: "Tratamiento profesional y personalizado", 
+        }));
+        
+        // Unimos: Redes/WhatsApp locales + Precios de la nube
+        setConfig({ ...loadedConfig, services: serviciosNube });
+      } else {
+        setConfig(loadedConfig);
+      }
+      setIsLoaded(true);
+    })
+    .catch(err => {
+      console.error("Error al conectar con la base de datos:", err);
+      setConfig(loadedConfig); // Si falla internet, carga los precios de respaldo
+      setIsLoaded(true);
+    });
   }, []);
 
   // Handle config save
@@ -68,45 +106,25 @@ export default function Home() {
 
   return (
     <main className="min-h-screen relative">
-      {/* Fluid Morphing Background */}
       <FluidBackground />
-      
-      {/* Header */}
       <Header />
-
-      {/* Hero Section */}
       <Hero onReservarClick={handleReservarClick} />
-
-      {/* Services Section */}
       <Services services={config.services} />
-
-      {/* Payment Methods */}
       <PaymentMethods />
-
-      {/* About Me Section */}
       <AboutMe />
-
-      {/* Location Section */}
       <Location onContactClick={handleContactClick} />
-
-      {/* Footer with hidden admin triggers */}
       <Footer
         socialLinks={config.socialLinks}
         onLongPressLevel1={() => setShowAdminLevel1(true)}
         onLongPressLevel2={() => setShowAdminLevel2(true)}
       />
-
-      {/* Floating WhatsApp Button */}
       <WhatsAppButton whatsappNumber={config.whatsappNumber} />
-
-      {/* Admin Modals */}
       <AdminLevel1Modal
         isOpen={showAdminLevel1}
         onClose={() => setShowAdminLevel1(false)}
         config={config}
         onSave={handleSaveConfig}
       />
-
       <AdminLevel2Modal
         isOpen={showAdminLevel2}
         onClose={() => setShowAdminLevel2(false)}
