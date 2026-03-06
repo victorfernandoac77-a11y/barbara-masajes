@@ -1,6 +1,5 @@
 "use client";
 
-// Barbara Landing Page - Masajes Terapéuticos
 import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/landing/Header";
 import { Hero } from "@/components/landing/Hero";
@@ -16,7 +15,7 @@ import { AdminLevel2Modal } from "@/components/landing/AdminLevel2Modal";
 import { getConfig, saveConfig, DEFAULT_CONFIG } from "@/lib/config";
 import type { SiteConfig } from "@/lib/config";
 
-// === INYECCIÓN DE SUPABASE (Motor de Base de Datos VFA Digital) ===
+// CONFIGURACIÓN DE SUPABASE
 const SUPABASE_URL = 'https://evgumejfkpyktezdodah.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_TVkTKUFKX5Bladdqb1flVQ_29NYsD56';
 
@@ -26,83 +25,63 @@ export default function Home() {
   const [showAdminLevel1, setShowAdminLevel1] = useState(false);
   const [showAdminLevel2, setShowAdminLevel2] = useState(false);
 
-  // Cargar configuración local Y precios de Supabase al entrar
   useEffect(() => {
-    // 1. Cargamos configuración local (redes, whatsapp, etc)
-    const loadedConfig = getConfig();
-    
-    // 2. Buscamos los precios en tiempo real a Supabase
-    fetch(`${SUPABASE_URL}/rest/v1/servicios`, {
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`
+    const fetchData = async () => {
+      try {
+        const localCfg = getConfig();
+
+        // 1. Traer Precios
+        const resSrv = await fetch(`${SUPABASE_URL}/rest/v1/servicios`, {
+          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+        });
+        const dataSrv = await resSrv.json();
+
+        // 2. Traer WhatsApp e Instagram
+        const resCfg = await fetch(`${SUPABASE_URL}/rest/v1/configuracion?id=eq.1`, {
+          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+        });
+        const dataCfg = await resCfg.json();
+
+        if (dataSrv && dataSrv.length > 0) {
+          const serviciosNube = dataSrv.map((srv: any) => ({
+            id: srv.id,
+            title: srv.nombre,
+            price: srv.precio,
+            duration: srv.duracion,
+            description: "Tratamiento profesional y personalizado",
+          }));
+
+          const updatedConfig = {
+            ...localCfg,
+            services: serviciosNube,
+            whatsappNumber: dataCfg[0]?.whatsapp || localCfg.whatsappNumber,
+            socialLinks: {
+              ...localCfg.socialLinks,
+              instagram: dataCfg[0]?.instagram ? `https://instagram.com/${dataCfg[0].instagram}` : localCfg.socialLinks.instagram
+            }
+          };
+          setConfig(updatedConfig);
+        }
+      } catch (err) {
+        console.error("Error cargando datos:", err);
+      } finally {
+        setIsLoaded(true);
       }
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data && data.length > 0) {
-        // Adaptamos los datos para que el diseño de v0 no se rompa
-        const serviciosNube = data.map((srv: any) => ({
-          id: srv.id,
-          title: srv.nombre, // Aseguramos compatibilidad
-          nombre: srv.nombre,
-          price: srv.precio,
-          precio: srv.precio,
-          duration: srv.duracion,
-          duracion: srv.duracion,
-          description: "Tratamiento profesional y personalizado", 
-        }));
-        
-        // Unimos: Redes/WhatsApp locales + Precios de la nube
-        setConfig({ ...loadedConfig, services: serviciosNube });
-      } else {
-        setConfig(loadedConfig);
-      }
-      setIsLoaded(true);
-    })
-    .catch(err => {
-      console.error("Error al conectar con la base de datos:", err);
-      setConfig(loadedConfig); // Si falla internet, carga los precios de respaldo
-      setIsLoaded(true);
-    });
+    };
+    fetchData();
   }, []);
 
-  // Handle config save
-  const handleSaveConfig = useCallback((updates: Partial<SiteConfig>) => {
-    const updatedConfig = { ...config, ...updates };
-    setConfig(updatedConfig);
-    saveConfig(updates);
-  }, [config]);
-
-  // Handle factory reset
-  const handleReset = useCallback(() => {
-    setConfig(DEFAULT_CONFIG);
-  }, []);
-
-  // Handle WhatsApp for reservations
   const handleReservarClick = useCallback(() => {
-    const message = encodeURIComponent(
-      "Hola Barbara, vengo desde la web y quiero reservar un turno."
-    );
+    const message = encodeURIComponent("Hola Barbara, quiero reservar un turno.");
     window.open(`https://wa.me/${config.whatsappNumber}?text=${message}`, "_blank");
   }, [config.whatsappNumber]);
 
-  // Handle contact click
   const handleContactClick = useCallback(() => {
-    const message = encodeURIComponent(
-      "Hola Barbara, vengo desde la web y tengo una consulta."
-    );
+    const message = encodeURIComponent("Hola Barbara, tengo una consulta.");
     window.open(`https://wa.me/${config.whatsappNumber}?text=${message}`, "_blank");
   }, [config.whatsappNumber]);
 
-  // Don't render until config is loaded to prevent hydration mismatch
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="w-10 h-10 border-3 border-rose border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (!isLoaded) return <div className="min-h-screen bg-cream flex items-center justify-center"><div className="w-10 h-10 border-3 border-rose border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <main className="min-h-screen relative">
@@ -113,25 +92,8 @@ export default function Home() {
       <PaymentMethods />
       <AboutMe />
       <Location onContactClick={handleContactClick} />
-      <Footer
-        socialLinks={config.socialLinks}
-        onLongPressLevel1={() => setShowAdminLevel1(true)}
-        onLongPressLevel2={() => setShowAdminLevel2(true)}
-      />
+      <Footer socialLinks={config.socialLinks} />
       <WhatsAppButton whatsappNumber={config.whatsappNumber} />
-      <AdminLevel1Modal
-        isOpen={showAdminLevel1}
-        onClose={() => setShowAdminLevel1(false)}
-        config={config}
-        onSave={handleSaveConfig}
-      />
-      <AdminLevel2Modal
-        isOpen={showAdminLevel2}
-        onClose={() => setShowAdminLevel2(false)}
-        config={config}
-        onSave={handleSaveConfig}
-        onReset={handleReset}
-      />
     </main>
   );
 }
