@@ -1,5 +1,6 @@
 "use client";
 
+// Barbara Landing Page - Masajes Terapéuticos
 import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/landing/Header";
 import { Hero } from "@/components/landing/Hero";
