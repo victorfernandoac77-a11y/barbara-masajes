@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/landing/Header";
 import { Hero } from "@/components/landing/Hero";
+import { FluidBackground } from "@/components/landing/FluidBackground";
 import { Services } from "@/components/landing/Services";
 import { PaymentMethods } from "@/components/landing/PaymentMethods";
 import { AboutMe } from "@/components/landing/AboutMe";
@@ -66,7 +67,10 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-cream relative">
+    <main className="min-h-screen relative">
+      {/* Fluid Morphing Background */}
+      <FluidBackground />
+      
       {/* Header */}
       <Header />
 
@@ -74,10 +78,7 @@ export default function Home() {
       <Hero onReservarClick={handleReservarClick} />
 
       {/* Services Section */}
-      <Services 
-        services={config.services} 
-        onReservarClick={handleReservarClick} 
-      />
+      <Services services={config.services} />
 
       {/* Payment Methods */}
       <PaymentMethods />

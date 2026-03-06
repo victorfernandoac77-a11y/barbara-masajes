@@ -1,12 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, HelpCircle, Calendar, User, Phone, Send } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence, useDragControls } from "framer-motion";
+import { X, HelpCircle, Calendar, User, Phone, Send, Trash2 } from "lucide-react";
 
 interface WhatsAppButtonProps {
   whatsappNumber: string;
 }
+
+interface SavedUser {
+  name: string;
+  phone: string;
+}
+
+const STORAGE_KEY = "barbara_lead_data";
 
 // Real WhatsApp SVG Icon
 function WhatsAppIcon({ className }: { className?: string }) {
@@ -22,7 +29,26 @@ export function WhatsAppButton({ whatsappNumber }: WhatsAppButtonProps) {
   const [step, setStep] = useState<"form" | "options">("form");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [savedUser, setSavedUser] = useState<SavedUser | null>(null);
   const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const constraintsRef = useRef<HTMLDivElement>(null);
+  const dragControls = useDragControls();
+
+  // Load saved user from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsedUser = JSON.parse(saved) as SavedUser;
+        setSavedUser(parsedUser);
+        setName(parsedUser.name);
+        setPhone(parsedUser.phone);
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, []);
 
   const validateForm = () => {
     const newErrors: { name?: string; phone?: string } = {};
@@ -44,32 +70,62 @@ export function WhatsAppButton({ whatsappNumber }: WhatsAppButtonProps) {
   const handleSubmitForm = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
+      // Save user data to localStorage
+      const userData: SavedUser = { name, phone };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+      setSavedUser(userData);
       setStep("options");
     }
   };
 
   const handleOptionSelect = (type: "consulta" | "turno") => {
+    const userData = savedUser || { name, phone };
     const typeText = type === "consulta" ? "hacer una consulta" : "reservar un turno";
     const message = encodeURIComponent(
-      `Hola Barbara, soy ${name}, mi número es ${phone} y quiero ${typeText}.`
+      `Hola Barbara, soy ${userData.name}, mi número es ${userData.phone} y quiero ${typeText}.`
     );
     window.open(`https://wa.me/${whatsappNumber}?text=${message}`, "_blank");
     handleClose();
   };
 
+  const handleClearSavedUser = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setSavedUser(null);
+    setName("");
+    setPhone("");
+    setStep("form");
+  };
+
+  const handleOpen = () => {
+    setIsOpen(true);
+    // If user already saved, go directly to options
+    if (savedUser) {
+      setStep("options");
+    } else {
+      setStep("form");
+    }
+  };
+
   const handleClose = () => {
     setIsOpen(false);
-    // Reset after animation
+    // Reset form errors but keep name/phone if user is saved
     setTimeout(() => {
-      setStep("form");
-      setName("");
-      setPhone("");
       setErrors({});
+      if (!savedUser) {
+        setStep("form");
+      }
     }, 300);
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <>
+      {/* Full screen drag constraint container */}
+      <div 
+        ref={constraintsRef} 
+        className="fixed inset-0 pointer-events-none z-40"
+        style={{ padding: "80px 20px 20px 20px" }}
+      />
+      
       <AnimatePresence>
         {isOpen && (
           <>
@@ -79,7 +135,7 @@ export function WhatsAppButton({ whatsappNumber }: WhatsAppButtonProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={handleClose}
-              className="fixed inset-0 bg-black/30 backdrop-blur-sm"
+              className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50"
             />
 
             {/* Modal */}
@@ -88,7 +144,7 @@ export function WhatsAppButton({ whatsappNumber }: WhatsAppButtonProps) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
-              className="fixed inset-x-4 bottom-28 sm:absolute sm:inset-auto sm:bottom-24 sm:right-0 sm:w-80 bg-white rounded-3xl shadow-2xl border border-warm-border overflow-hidden"
+              className="fixed inset-x-4 top-1/2 -translate-y-1/2 sm:inset-auto sm:top-auto sm:bottom-40 sm:right-6 sm:translate-y-0 sm:w-96 bg-white rounded-3xl shadow-2xl border border-warm-border overflow-hidden z-50"
             >
               {/* Header */}
               <div className="p-5 border-b border-warm-border bg-gradient-to-r from-rose-soft to-cream">
@@ -102,7 +158,7 @@ export function WhatsAppButton({ whatsappNumber }: WhatsAppButtonProps) {
                         Contactar a Barbara
                       </h3>
                       <p className="text-sm text-charcoal-light">
-                        {step === "form" ? "Completa tus datos" : "Elige una opción"}
+                        {step === "form" ? "Completa tus datos" : savedUser ? `Hola de nuevo, ${savedUser.name}` : "Elige una opción"}
                       </p>
                     </div>
                   </div>
@@ -142,7 +198,7 @@ export function WhatsAppButton({ whatsappNumber }: WhatsAppButtonProps) {
                             onChange={(e) => setName(e.target.value)}
                             className={`w-full pl-12 pr-4 py-3 rounded-2xl border ${
                               errors.name ? "border-rose bg-rose-soft" : "border-warm-border bg-cream"
-                            } focus:outline-none focus:ring-2 focus:ring-sage/50 transition-colors`}
+                            } focus:outline-none focus:ring-2 focus:ring-sage/50 transition-colors text-charcoal`}
                             placeholder="Ingresa tu nombre"
                           />
                         </div>
@@ -164,7 +220,7 @@ export function WhatsAppButton({ whatsappNumber }: WhatsAppButtonProps) {
                             onChange={(e) => setPhone(e.target.value)}
                             className={`w-full pl-12 pr-4 py-3 rounded-2xl border ${
                               errors.phone ? "border-rose bg-rose-soft" : "border-warm-border bg-cream"
-                            } focus:outline-none focus:ring-2 focus:ring-sage/50 transition-colors`}
+                            } focus:outline-none focus:ring-2 focus:ring-sage/50 transition-colors text-charcoal`}
                             placeholder="Ej: 11 2345-6789"
                           />
                         </div>
@@ -192,11 +248,20 @@ export function WhatsAppButton({ whatsappNumber }: WhatsAppButtonProps) {
                       className="space-y-3"
                     >
                       {/* User Info Display */}
-                      <div className="p-3 bg-cream rounded-2xl border border-warm-border mb-4">
+                      <div className="p-3 bg-cream rounded-2xl border border-warm-border mb-4 flex items-center justify-between">
                         <p className="text-sm text-charcoal">
-                          <span className="font-medium">{name}</span>
-                          <span className="text-charcoal-light"> • {phone}</span>
+                          <span className="font-medium">{savedUser?.name || name}</span>
+                          <span className="text-charcoal-light"> • {savedUser?.phone || phone}</span>
                         </p>
+                        {savedUser && (
+                          <button
+                            onClick={handleClearSavedUser}
+                            className="p-1.5 hover:bg-rose/10 rounded-lg transition-colors"
+                            title="Borrar mis datos"
+                          >
+                            <Trash2 className="w-4 h-4 text-rose" />
+                          </button>
+                        )}
                       </div>
 
                       {/* Options */}
@@ -226,13 +291,15 @@ export function WhatsAppButton({ whatsappNumber }: WhatsAppButtonProps) {
                         </div>
                       </button>
 
-                      {/* Back Button */}
-                      <button
-                        onClick={() => setStep("form")}
-                        className="w-full py-2.5 text-charcoal-light text-sm hover:text-charcoal transition-colors"
-                      >
-                        Volver a editar datos
-                      </button>
+                      {/* Edit Data Button - only if not returning user */}
+                      {!savedUser && (
+                        <button
+                          onClick={() => setStep("form")}
+                          className="w-full py-2.5 text-charcoal-light text-sm hover:text-charcoal transition-colors"
+                        >
+                          Volver a editar datos
+                        </button>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -242,46 +309,65 @@ export function WhatsAppButton({ whatsappNumber }: WhatsAppButtonProps) {
         )}
       </AnimatePresence>
 
-      {/* Main FAB Button - Larger and more eye-catching */}
-      <motion.button
-        onClick={() => setIsOpen(!isOpen)}
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.95 }}
-        className="relative w-20 h-20 bg-[#25D366] text-white rounded-full shadow-xl shadow-[#25D366]/40 flex items-center justify-center hover:bg-[#20BA5C] transition-colors"
-        aria-label={isOpen ? "Cerrar menú de WhatsApp" : "Abrir menú de WhatsApp"}
+      {/* Main FAB Button - Draggable, larger, positioned higher */}
+      <motion.div
+        id="whatsapp-button"
+        drag
+        dragControls={dragControls}
+        dragConstraints={constraintsRef}
+        dragElastic={0.1}
+        dragMomentum={false}
+        onDragEnd={(_, info) => {
+          setPosition({ x: position.x + info.offset.x, y: position.y + info.offset.y });
+        }}
+        style={{ x: position.x, y: position.y }}
+        className="fixed bottom-24 right-6 z-50 cursor-grab active:cursor-grabbing"
       >
-        <AnimatePresence mode="wait">
-          {isOpen ? (
-            <motion.div
-              key="close"
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <X className="w-9 h-9" />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="whatsapp"
-              initial={{ rotate: 90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: -90, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <WhatsAppIcon className="w-10 h-10" />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <motion.button
+          onClick={handleOpen}
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.95 }}
+          className="relative w-24 h-24 bg-[#25D366] text-white rounded-full shadow-2xl shadow-[#25D366]/50 flex items-center justify-center hover:bg-[#20BA5C] transition-colors"
+          aria-label={isOpen ? "Cerrar menú de WhatsApp" : "Abrir menú de WhatsApp"}
+        >
+          <AnimatePresence mode="wait">
+            {isOpen ? (
+              <motion.div
+                key="close"
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <X className="w-10 h-10" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="whatsapp"
+                initial={{ rotate: 90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: -90, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <WhatsAppIcon className="w-12 h-12" />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        {/* Pulse Effect */}
-        {!isOpen && (
-          <>
-            <span className="absolute inset-0 rounded-full bg-[#25D366] animate-ping opacity-25" />
-            <span className="absolute -inset-1 rounded-full border-2 border-[#25D366]/30 animate-pulse" />
-          </>
-        )}
-      </motion.button>
-    </div>
+          {/* Pulse Effect */}
+          {!isOpen && (
+            <>
+              <span className="absolute inset-0 rounded-full bg-[#25D366] animate-ping opacity-25" />
+              <span className="absolute -inset-2 rounded-full border-2 border-[#25D366]/30 animate-pulse" />
+            </>
+          )}
+        </motion.button>
+        
+        {/* Drag hint indicator */}
+        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-charcoal-light/50 whitespace-nowrap pointer-events-none">
+          arrastra
+        </div>
+      </motion.div>
+    </>
   );
 }

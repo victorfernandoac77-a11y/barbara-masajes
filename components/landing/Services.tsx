@@ -6,10 +6,9 @@ import type { Service } from "@/lib/config";
 
 interface ServicesProps {
   services: Service[];
-  onReservarClick: () => void;
 }
 
-export function Services({ services, onReservarClick }: ServicesProps) {
+export function Services({ services }: ServicesProps) {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -38,7 +37,7 @@ export function Services({ services, onReservarClick }: ServicesProps) {
   };
 
   return (
-    <section id="servicios" className="py-12 sm:py-16 px-4 sm:px-6 bg-warm-white">
+    <section id="servicios" className="py-12 sm:py-16 px-4 sm:px-6 bg-warm-white/90 backdrop-blur-sm relative z-10">
       <div className="max-w-6xl mx-auto">
         {/* Section Header */}
         <motion.div
@@ -101,9 +100,22 @@ export function Services({ services, onReservarClick }: ServicesProps) {
                   </span>
                 </div>
 
-                {/* Book Button */}
+                {/* Book Button - Scrolls to WhatsApp */}
                 <button
-                  onClick={onReservarClick}
+                  onClick={() => {
+                    const whatsappBtn = document.getElementById("whatsapp-button");
+                    if (whatsappBtn) {
+                      whatsappBtn.scrollIntoView({ behavior: "smooth", block: "center" });
+                      // Add a brief highlight animation
+                      whatsappBtn.classList.add("animate-bounce");
+                      setTimeout(() => {
+                        whatsappBtn.classList.remove("animate-bounce");
+                        // Trigger click after scroll
+                        const btn = whatsappBtn.querySelector("button");
+                        btn?.click();
+                      }, 800);
+                    }
+                  }}
                   className="w-full py-3 px-4 bg-sage/10 text-sage font-medium rounded-2xl hover:bg-sage hover:text-white transition-all duration-300"
                 >
                   Reservar
