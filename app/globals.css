@@ -48,6 +48,12 @@
   --charcoal-light: #6B6B6B;
   --warm-white: #FFFFFF;
   --warm-border: #E5DFD6;
+  
+  /* Rose Accent Colors */
+  --rose: #E11D48;
+  --rose-light: #FB7185;
+  --rose-dark: #BE123C;
+  --rose-soft: #FFF1F2;
 }
 
 @theme inline {
@@ -64,6 +70,10 @@
   --color-charcoal-light: var(--charcoal-light);
   --color-warm-white: var(--warm-white);
   --color-warm-border: var(--warm-border);
+  --color-rose: var(--rose);
+  --color-rose-light: var(--rose-light);
+  --color-rose-dark: var(--rose-dark);
+  --color-rose-soft: var(--rose-soft);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

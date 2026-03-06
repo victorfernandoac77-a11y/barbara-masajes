@@ -38,8 +38,8 @@ export function Header() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <Leaf className="w-6 h-6 sm:w-8 sm:h-8 text-sage" />
-            <span className="font-serif text-xl sm:text-2xl font-semibold">Barbara</span>
+            <Leaf className="w-6 h-6 sm:w-8 sm:h-8 text-rose" />
+            <span className="font-serif text-xl sm:text-2xl font-semibold"><span className="text-rose">B</span>arbara</span>
           </motion.a>
 
           {/* Desktop Navigation */}
@@ -52,7 +52,7 @@ export function Header() {
                   e.preventDefault();
                   scrollToSection(link.href);
                 }}
-                className="text-charcoal-light hover:text-sage transition-colors duration-300 font-medium"
+                className="text-charcoal-light hover:text-rose transition-colors duration-300 font-medium"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -92,7 +92,7 @@ export function Header() {
                     e.preventDefault();
                     scrollToSection(link.href);
                   }}
-                  className="text-charcoal-light hover:text-sage transition-colors duration-300 font-medium py-2"
+                  className="text-charcoal-light hover:text-rose transition-colors duration-300 font-medium py-2"
                 >
                   {link.label}
                 </a>

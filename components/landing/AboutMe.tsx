@@ -9,6 +9,7 @@ export function AboutMe() {
       icon: Heart,
       title: "Atención Personalizada",
       description: "Cada sesión se adapta a tus necesidades específicas",
+      accent: true, // Uses rose color
     },
     {
       icon: Shield,
@@ -62,13 +63,13 @@ export function AboutMe() {
               </p>
             </div>
 
-            {/* Quote */}
+            {/* Quote with rose accent */}
             <motion.blockquote
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="mt-8 pl-6 border-l-4 border-sage italic text-charcoal-light"
+              className="mt-8 pl-6 border-l-4 border-rose italic text-charcoal-light"
             >
               "Mi objetivo es que salgas sintiéndote renovado, con menos tensiones y más conexión con tu cuerpo."
             </motion.blockquote>
@@ -91,8 +92,10 @@ export function AboutMe() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="bg-warm-white p-5 sm:p-6 rounded-3xl border border-warm-border hover:border-sage/30 transition-all duration-300"
               >
-                <div className="w-12 h-12 bg-sage/10 rounded-2xl flex items-center justify-center mb-4">
-                  <feature.icon className="w-6 h-6 text-sage" />
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${
+                  feature.accent ? "bg-rose/10" : "bg-sage/10"
+                }`}>
+                  <feature.icon className={`w-6 h-6 ${feature.accent ? "text-rose" : "text-sage"}`} />
                 </div>
                 <h3 className="font-serif text-lg font-semibold text-charcoal mb-2">
                   {feature.title}

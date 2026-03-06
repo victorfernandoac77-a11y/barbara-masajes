@@ -17,9 +17,8 @@ export interface SocialLinks {
 }
 
 export interface SiteConfig {
-  // Contact
-  whatsappConsulta: string;
-  whatsappTurno: string;
+  // Contact - Single WhatsApp number for all communications
+  whatsappNumber: string;
   
   // Payments
   mercadoPagoAlias: string;
@@ -41,8 +40,7 @@ export interface SiteConfig {
 }
 
 export const DEFAULT_CONFIG: SiteConfig = {
-  whatsappConsulta: "5491123456789",
-  whatsappTurno: "5491198765432",
+  whatsappNumber: "5491123456789",
   mercadoPagoAlias: "barbara.masajes.mp",
   socialLinks: {
     instagram: "https://instagram.com/barbara.masajes",
@@ -129,5 +127,5 @@ export function resetConfig(): void {
 }
 
 // Admin passwords
-export const ADMIN_PASSWORD_LEVEL_1 = "AdminMasaje";
+export const ADMIN_PASSWORD_LEVEL_1 = "Masajes2026B";
 export const ADMIN_PASSWORD_LEVEL_2 = "Vfa@1990";

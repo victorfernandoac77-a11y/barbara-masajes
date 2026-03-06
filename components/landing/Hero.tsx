@@ -13,10 +13,13 @@ export function Hero({ onReservarClick }: HeroProps) {
       id="inicio"
       className="min-h-screen flex items-center justify-center pt-20 pb-12 px-4 sm:px-6 relative overflow-hidden"
     >
-      {/* Decorative Background Elements */}
-      <div className="absolute inset-0 pointer-events-none">
+      {/* Decorative Background Elements - z-0 to stay behind content */}
+      <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute top-20 right-10 w-64 h-64 bg-sage/5 rounded-full blur-3xl" />
         <div className="absolute bottom-20 left-10 w-96 h-96 bg-sage/5 rounded-full blur-3xl" />
+        {/* Rose accent decorations */}
+        <div className="absolute top-1/3 right-1/4 w-32 h-32 bg-rose/5 rounded-full blur-2xl" />
+        <div className="absolute bottom-1/4 left-1/3 w-48 h-48 bg-rose-light/5 rounded-full blur-3xl" />
       </div>
 
       <div className="max-w-4xl mx-auto text-center relative z-10">
@@ -32,13 +35,13 @@ export function Hero({ onReservarClick }: HeroProps) {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="inline-flex items-center gap-2 px-4 py-2 bg-sage/10 rounded-full mb-6"
           >
-            <span className="w-2 h-2 bg-sage rounded-full" />
+            <span className="w-2 h-2 bg-rose rounded-full animate-pulse" />
             <span className="text-sage-dark text-sm font-medium">Gabinete Privado en Guernica</span>
           </motion.div>
 
           {/* Main Title */}
           <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold text-charcoal mb-6 text-balance leading-tight">
-            Barbara: Bienestar y Sanación
+            <span className="text-rose">Barbara</span>: Bienestar y Sanación
           </h1>
 
           {/* Subtitle */}

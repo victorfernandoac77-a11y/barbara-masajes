@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/landing/Header";
 import { Hero } from "@/components/landing/Hero";
 import { Services } from "@/components/landing/Services";
+import { PaymentMethods } from "@/components/landing/PaymentMethods";
 import { AboutMe } from "@/components/landing/AboutMe";
 import { Location } from "@/components/landing/Location";
 import { Footer } from "@/components/landing/Footer";
@@ -38,33 +39,33 @@ export default function Home() {
     setConfig(DEFAULT_CONFIG);
   }, []);
 
-  // Handle WhatsApp menu open for reservations
+  // Handle WhatsApp for reservations
   const handleReservarClick = useCallback(() => {
     const message = encodeURIComponent(
-      "Hola Barbara, vengo desde la web y necesito un turno..."
+      "Hola Barbara, vengo desde la web y quiero reservar un turno."
     );
-    window.open(`https://wa.me/${config.whatsappTurno}?text=${message}`, "_blank");
-  }, [config.whatsappTurno]);
+    window.open(`https://wa.me/${config.whatsappNumber}?text=${message}`, "_blank");
+  }, [config.whatsappNumber]);
 
   // Handle contact click
   const handleContactClick = useCallback(() => {
     const message = encodeURIComponent(
-      "Hola Barbara, vengo desde la web y necesito hacer una consulta..."
+      "Hola Barbara, vengo desde la web y tengo una consulta."
     );
-    window.open(`https://wa.me/${config.whatsappConsulta}?text=${message}`, "_blank");
-  }, [config.whatsappConsulta]);
+    window.open(`https://wa.me/${config.whatsappNumber}?text=${message}`, "_blank");
+  }, [config.whatsappNumber]);
 
   // Don't render until config is loaded to prevent hydration mismatch
   if (!isLoaded) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-sage border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-3 border-rose border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-cream">
+    <main className="min-h-screen bg-cream relative">
       {/* Header */}
       <Header />
 
@@ -76,6 +77,9 @@ export default function Home() {
         services={config.services} 
         onReservarClick={handleReservarClick} 
       />
+
+      {/* Payment Methods */}
+      <PaymentMethods />
 
       {/* About Me Section */}
       <AboutMe />
@@ -91,10 +95,7 @@ export default function Home() {
       />
 
       {/* Floating WhatsApp Button */}
-      <WhatsAppButton
-        whatsappConsulta={config.whatsappConsulta}
-        whatsappTurno={config.whatsappTurno}
-      />
+      <WhatsAppButton whatsappNumber={config.whatsappNumber} />
 
       {/* Admin Modals */}
       <AdminLevel1Modal

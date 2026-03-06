@@ -70,9 +70,9 @@ export function Services({ services, onReservarClick }: ServicesProps) {
               variants={itemVariants}
               className="group relative bg-cream rounded-3xl p-6 border border-warm-border hover:border-sage/30 transition-all duration-300 hover:shadow-lg"
             >
-              {/* Offer Badge */}
+              {/* Offer Badge - Rose color for offers */}
               {service.hasOffer && (
-                <div className="absolute -top-3 -right-3 flex items-center gap-1 px-3 py-1.5 bg-sage text-white text-xs font-medium rounded-full shadow-md">
+                <div className="absolute -top-3 -right-3 flex items-center gap-1 px-3 py-1.5 bg-rose text-white text-xs font-medium rounded-full shadow-md shadow-rose/30 z-10">
                   <Sparkles className="w-3 h-3" />
                   {service.offerText}
                 </div>
@@ -80,7 +80,7 @@ export function Services({ services, onReservarClick }: ServicesProps) {
 
               {/* Service Content */}
               <div className="space-y-4">
-                <h3 className="font-serif text-xl font-semibold text-charcoal group-hover:text-sage-dark transition-colors">
+                <h3 className="font-serif text-xl font-semibold text-charcoal group-hover:text-rose transition-colors">
                   {service.name}
                 </h3>
 
