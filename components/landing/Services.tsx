@@ -38,7 +38,7 @@ export function Services({ services, onReservarClick }: ServicesProps) {
   };
 
   return (
-    <section id="servicios" className="py-20 sm:py-28 px-4 sm:px-6 bg-warm-white">
+    <section id="servicios" className="py-12 sm:py-16 px-4 sm:px-6 bg-warm-white">
       <div className="max-w-6xl mx-auto">
         {/* Section Header */}
         <motion.div

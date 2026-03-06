@@ -11,7 +11,7 @@ export function Hero({ onReservarClick }: HeroProps) {
   return (
     <section
       id="inicio"
-      className="min-h-screen flex items-center justify-center pt-20 pb-12 px-4 sm:px-6 relative overflow-hidden"
+      className="flex items-center justify-center pt-24 pb-8 px-4 sm:px-6 relative overflow-hidden"
     >
       {/* Decorative Background Elements - z-0 to stay behind content */}
       <div className="absolute inset-0 pointer-events-none z-0">
